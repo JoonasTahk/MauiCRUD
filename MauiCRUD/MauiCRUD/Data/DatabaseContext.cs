@@ -1,12 +1,12 @@
 ﻿using SQLite;
-
+using System.Linq.Expressions;
 
 namespace MauiCRUD.Data
 {
     public class DatabaseContext : IAsyncDisposable
     {
-        private const string DbName = "MyDatabase.db3";
-        private static string DbPath => Path.Combine(FileSystem.AppDataDirectory, DbName);
+        private const string DbName = "CRUDdb3";
+        private static string DbPath => Path.Combine(".", DbName);
 
         private SQLiteAsyncConnection _connection;
         private SQLiteAsyncConnection Database =>
@@ -67,5 +67,11 @@ namespace MauiCRUD.Data
         }
 
         public async ValueTask DisposeAsync() => await _connection?.CloseAsync();
+
+        public async Task<IEnumerable<TTable>> GetFileteredAsync<TTable>(Expression<Func<TTable, bool>> predicate) where TTable: class, new()
+        {
+            var table = await GetTableAsync<TTable>();
+            return await table.Where(predicate).ToListAsync();
+        }
     }
 }
